@@ -1,0 +1,7 @@
+# 텍스트는 저장소에 LF로 정규화 — 플랫폼 간 잡음 제거
+* text=auto
+
+# 이식 원본은 줄바꿈 변환 금지(바이트 고정) — 무결성 해시가 어디서 클론해도 유지되게 함
+vendor/rand-seed.js -text
+vendor/js-sha256.umd.js -text
+vendor/fflate.js -text

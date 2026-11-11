@@ -1,0 +1,61 @@
+Copyright (c) 2026 ㈜유니피커. All rights reserved.
+
+UniPicker 추첨 재연 검증기 (unipicker-verifier)
+
+이 소프트웨어의 소스 코드는 추첨 로직을 제3자가 확인할 수 있도록 "소스 확인용"으로만
+공개됩니다. 개별 추첨 결과의 검증은 저작권자가 제공하는 공식 웹 검증 환경에서 수행하며,
+소스를 내려받아 실행하는 방식으로는 수행할 수 없습니다.
+저작권자의 사전 서면 동의 없이 아래 행위를 금합니다.
+
+  - 소스의 실행 및 빌드
+  - 복제, 수정, 배포, 재배포
+  - 2차적저작물(파생물) 작성
+  - 상업적 또는 비상업적 목적의 이용
+
+허용되는 범위는 소스 코드의 열람, 곧 그 내용을 확인하는 행위에 한정됩니다. 이 허용은 위
+금지 조항의 범위를 넘지 않습니다 — 소스의 실행·빌드, 자기 제품·서비스에의 편입,
+2차적저작물 작성, 재배포, 상업적·비상업적 이용에는 적용되지 않습니다.
+
+저작권자가 운영하는 공식 웹 검증 환경에서 검증 페이지를 이용하는 것은 저작권자가 제공하는
+서비스를 이용하는 행위이며, 위 실행 금지 조항의 대상이 아닙니다.
+
+권리 관련 문의는 저작권자 ㈜유니피커에게 문의하십시오.
+
+제3자 구성요소
+
+이 저장소의 vendor/ 디렉토리에는 각자의 라이선스로 배포되는 제3자 라이브러리가
+포함되어 있으며, 그 파일에는 위 독점 조건이 아니라 아래 각 라이선스가 적용됩니다.
+
+
+The source code of this software is made publicly available for the sole purpose of
+allowing third parties to inspect the drawing (lottery) logic. Verification of an
+individual draw result is carried out in the official web verification environment
+provided by the copyright holder, and cannot be carried out by downloading and running
+this source. Without the prior written consent of the copyright holder, the following
+are prohibited:
+
+  - execution or building of the source code;
+  - copying, modification, distribution, or redistribution;
+  - creation of derivative works;
+  - any use, whether commercial or non-commercial.
+
+The permission granted is limited to viewing the source code — that is, reading its
+contents. It does not extend beyond the prohibitions above: it does not cover executing or
+building the source, incorporation into your own product or service, creation of derivative
+works, redistribution, or any other commercial or non-commercial use.
+
+Using the verification page in the official web verification environment operated by the
+copyright holder is use of a service the copyright holder provides, and is not covered by
+the prohibition on execution above.
+
+For any licensing inquiries, please contact the copyright holder UniPicker Corp.
+
+Third-party components
+
+The vendor/ directory contains third-party libraries distributed under their
+own licenses. The proprietary terms above do NOT apply to those files; each
+is governed by its respective license below.
+
+  - js-sha256 (MIT) — vendor/LICENSE-js-sha256.txt
+  - rand-seed  (MIT) — vendor/LICENSE-rand-seed.txt
+  - fflate     (MIT) — vendor/LICENSE-fflate.txt

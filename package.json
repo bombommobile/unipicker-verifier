@@ -1,0 +1,10 @@
+{
+  "name": "unipicker-verifier",
+  "description": "Static page that replays a completed UniPicker draw in the browser and checks the outcome against a downloaded verification bundle.",
+  "private": true,
+  "license": "SEE LICENSE IN LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bombommobile/unipicker-verifier.git"
+  }
+}

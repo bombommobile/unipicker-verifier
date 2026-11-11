@@ -1,0 +1,265 @@
+/*
+ * Copyright (c) 2026 ㈜유니피커. All rights reserved.
+ *
+ * 이 소스 코드는 추첨 로직을 제3자가 확인할 수 있도록 열람 목적으로 공개합니다.
+ * 개별 추첨 결과의 검증은 저작권자가 제공하는 공식 웹 검증 환경에서 수행합니다.
+ * 열람은 허용하지만 직접 실행하거나 빌드할 수 없습니다. 저작권자의 사전 서면 동의 없이
+ * 복제, 수정, 배포, 재배포, 2차적저작물 작성과 그 밖의 상업적·비상업적 이용을 할 수 없습니다.
+ * 자세한 이용 조건은 저장소 루트의 LICENSE 를 참조하십시오.
+ *
+ * This source code is published so third parties can inspect the draw logic. Verification of an
+ * individual draw result is performed in the official web verification environment provided by
+ * the copyright holder. Inspection is permitted; direct execution or building is not. Copying,
+ * modification, distribution, redistribution, creation of derivative works, and any other
+ * commercial or non-commercial use are prohibited without the copyright holder's prior written
+ * consent. See LICENSE in the repository root for the complete terms.
+ */
+
+/* Verifier page styles. Two colours from the logo (red, ink); every gray is a tint of ink on white. */
+/* ⚠ Nothing external is loaded: the font ships next to this file, so the page reaches no other host. */
+
+@font-face{font-family:Pretendard;src:url('./fonts/PretendardVariable.woff2') format('woff2');font-weight:100 900;font-display:swap}
+
+:root{
+  --red:#C8171E;
+  --ink:#231916;
+  --ink-75:#5A5350;
+  --ink-55:#86817F;
+  --ink-40:#A7A3A2;
+  --ink-15:#DEDDDC;
+  --ink-6:#F2F1F1;
+  --ink-3:#F9F8F8;
+  --red-8:#FBECED;
+  --paper:#FFFFFF;
+  --measure:1200px;
+  --gutter:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:Pretendard,'Apple SD Gothic Neo','Noto Sans KR',sans-serif;font-size:16px;line-height:1.7;word-break:keep-all;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button,summary{font:inherit;color:inherit;cursor:pointer}
+button{background:none;border:0;padding:0}
+a,button,summary{touch-action:manipulation}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--red);outline-offset:4px}
+::selection{background:var(--ink);color:var(--paper)}
+h1,h2,h3,p{margin:0}
+h1,h2,h3{font-weight:600;line-height:1.3;letter-spacing:-.04em}
+/* The English page drops the letter-spacing tightening meant for Korean */
+html[lang="en"] :is(h1,h2,h3,b,strong,.brand span,.big){letter-spacing:-.01em}
+.hidden{display:none !important}
+.inner{width:calc(100% - var(--gutter)*2);max-width:var(--measure);margin:0 auto}
+.skip{position:fixed;top:-100px;left:20px;z-index:100;background:var(--paper);padding:12px;border:1px solid var(--ink)}
+.skip:focus{top:10px}
+
+/* ── Buttons ── */
+.button{display:inline-flex;align-items:center;justify-content:space-between;gap:36px;min-height:50px;padding:0 22px;font-size:15px;font-weight:600;letter-spacing:-.01em;border:1px solid var(--ink);border-radius:0;transition:background .15s,color .15s}
+.button.primary{background:#1f1f1f;border-color:#1f1f1f;color:var(--paper)}
+.button.primary:hover{background:var(--red);border-color:var(--red)}
+.button.ghost{background:var(--paper);border-color:var(--ink-40)}
+.button.ghost:hover{background:var(--ink-6);border-color:var(--ink)}
+/* The arrow lives in CSS so that writing the wording into a button leaves it in place */
+.button[data-arrow]::after{content:attr(data-arrow);font-size:18px;font-weight:400}
+
+/* ── Top bar ── */
+.topbar{position:relative;z-index:50;border-bottom:1px solid var(--ink-15);background:var(--paper)}
+.topbar .inner{display:flex;align-items:center;height:72px}
+.brand{display:flex;align-items:center;gap:14px;color:var(--ink)}
+.brand .logo{display:block;height:26px;width:auto}
+.brand span{display:flex;align-items:center;gap:12px;font-size:18px;font-weight:700;letter-spacing:-.03em;position:relative;top:2px}
+.brand span::before{content:"";width:1px;height:14px;background:var(--ink-15)}
+/* Language menu. Its entries are links rather than buttons, because the URL is the language. */
+.language{position:relative;margin-left:auto}
+.language>summary{width:36px;height:36px;display:grid;place-items:center;list-style:none;border-radius:999px;color:var(--ink-75);line-height:0;transition:color .15s,background .15s}
+.language>summary::-webkit-details-marker{display:none}
+.language>summary svg{width:24px;height:24px}
+.language>summary:hover,.language[open]>summary{color:var(--ink);background:var(--ink-6)}
+.langtog{position:absolute;right:0;top:42px;width:170px;border:1px solid var(--ink-15);padding:15px;background:var(--paper);font-size:14px;font-weight:500;z-index:5}
+.langtog a{display:block;padding:7px}
+.langtog a:hover{background:var(--ink-6)}
+.langtog a.on::after{content:" ✓"}
+
+/* ── Hero ── */
+.hero{padding:72px 0 80px;border-bottom:1px solid var(--ink-15)}
+.hero-row{display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:64px;align-items:center}
+.hero h1{font-size:clamp(30px,3.3vw,44px);font-weight:700;letter-spacing:-.05em;line-height:1.25}
+.hero h1 span{display:block}
+.hero h1 .accent{color:var(--red)}
+.hero .lead{margin-top:22px;font-size:16px;line-height:1.8;color:var(--ink-75)}
+.hero-btns{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
+.hero-btns .button{min-width:260px}
+
+/* Code window: the design's sample code, not a real file */
+.hero-art{justify-self:end;width:100%;max-width:480px}
+.term{position:relative;border:1px solid var(--ink-15);border-radius:12px;background:var(--paper);overflow:hidden}
+.term-bar{display:flex;align-items:center;gap:6px;padding:11px 14px;border-bottom:1px solid var(--ink-15);background:var(--ink-3)}
+.term-bar i{width:8px;height:8px;border-radius:50%;background:var(--ink-15)}
+.term-bar .fname{margin-left:auto;margin-right:auto;font-family:ui-monospace,Consolas,monospace;font-size:12px;color:var(--ink-55)}
+.term .code{height:272px;margin:0;padding:18px 20px;font-family:ui-monospace,Consolas,'D2Coding',monospace;font-size:13px;line-height:1.7;color:var(--ink);white-space:pre;overflow:hidden}
+.term .code .k,.term .code .s{color:var(--ink-55)}
+.term .code .f{color:var(--red);font-weight:600}
+/* ⚠ .animready is set by the script; without it the code shows in full, which is what a no-script page must do */
+.term.animready .ln{opacity:0;transition:opacity .45s ease}
+.term.animready .ln.on,.term.animready .zoom .ln{opacity:1}
+.lens{position:absolute;left:0;top:0;width:104px;height:104px;border:2px solid var(--ink);border-radius:50%;background:var(--paper);overflow:hidden;box-shadow:0 6px 18px rgba(35,25,22,.18);opacity:0;transition:opacity .3s;pointer-events:none}
+.lens::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 5px var(--paper)}
+.lens.on{opacity:1}
+.term .code.zoom{position:absolute;left:0;top:0;height:auto;transform-origin:0 0}
+.lens-handle{position:absolute;width:40px;height:6px;border-radius:3px;background:var(--ink);transform-origin:0 50%;transform:rotate(45deg);pointer-events:none;opacity:0;transition:opacity .3s}
+.lens-handle.on{opacity:1}
+
+/* ── Terms-of-use notice, between the hero and the verification screen ── */
+.noticebar{border-bottom:1px solid var(--ink-15);background:var(--ink-3)}
+.noticebar .inner{display:flex;align-items:center;gap:12px;padding-top:18px;padding-bottom:18px;font-size:15px;color:var(--ink-75)}
+.noticebar b{font-weight:700;color:var(--ink)}
+.badge{flex:none;font-size:11px;font-weight:700;letter-spacing:.01em;color:var(--red);border:1px solid var(--red);padding:3px 9px 1px;line-height:1.5;border-radius:999px}
+
+/* ── Verification progress ── */
+.run{padding:88px 0 112px}
+.sechead{display:flex;align-items:flex-end;gap:16px}
+.sechead .sectitle{font-size:clamp(28px,3vw,40px);letter-spacing:-.045em;line-height:1.25}
+.sechead .typechip{margin-bottom:6px;padding:3px 10px;border:1px solid var(--ink-15);border-radius:999px;font-size:12.5px;font-weight:600;color:var(--ink-75)}
+.sechead .pct{margin-left:auto;margin-bottom:4px;font-size:15px;font-weight:700;color:var(--ink-55);font-variant-numeric:tabular-nums}
+.pbar{height:8px;margin:20px 0 0;border-radius:999px;background:var(--ink-6);overflow:hidden}
+.pfill{height:100%;width:0%;border-radius:999px;background:var(--red);transition:width .4s linear}
+
+.stepcard{border-bottom:1px solid var(--ink-15)}
+.step{display:grid;grid-template-columns:36px minmax(0,1fr);gap:22px;padding:28px 0 0}
+.step .mark{display:flex;flex-direction:column;align-items:center;gap:8px}
+.step .dot{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:50%;font-size:13.5px;font-weight:700;border:1px solid var(--ink-15);background:var(--paper);color:var(--ink-40)}
+.step.active .dot,.step.done .dot{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.step.failed .dot{border-color:var(--red);background:var(--red);color:#fff}
+.spin{width:32px;height:32px;flex:none;border:2px solid var(--ink-15);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes pulse{50%{opacity:.35}}
+.step .rail{width:1px;flex:1 1 auto;min-height:16px;background:var(--ink-15)}
+.step.done .rail{background:var(--ink)}
+
+.step .body{min-width:0;padding-bottom:28px}
+.step .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.step .label{font-size:19px;font-weight:700;letter-spacing:-.03em;color:var(--ink-40)}
+.step.lit .label{color:var(--ink)}
+.step .status{font-size:12.5px;font-weight:600;color:var(--ink-40)}
+.step.active .status,.step.failed .status{color:var(--red)}
+.step.done .status{color:var(--ink-55)}
+.step .detail{display:block;margin-top:6px;font-size:14.5px;line-height:1.7;color:var(--ink-40)}
+.step.lit .detail{color:var(--ink-75)}
+
+/* Drop zone */
+.drop{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px;padding:44px 28px;text-align:center;border:1.5px dashed var(--ink-15);border-radius:12px;background:var(--paper);transition:background .15s,border-color .15s}
+.drop.drag{border-color:var(--red);background:var(--ink-3)}
+.drop .ic{display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--ink-6);color:var(--red)}
+.drop .ic svg{width:26px;height:26px}
+.drop .t{margin-top:4px;font-size:19px;font-weight:600;letter-spacing:-.03em}
+.drop .d{font-size:14.5px;line-height:1.7;color:var(--ink-55)}
+.drop .privacy{margin-top:2px;padding:5px 12px;border-radius:999px;background:var(--ink-6);font-size:13px;font-weight:600;color:var(--ink-75)}
+.drop .pick{margin-top:10px;min-width:220px;justify-content:center}
+
+.filled{display:flex;align-items:center;gap:12px;margin-top:16px;padding:16px 18px;border-radius:10px;background:var(--ink-3)}
+.filled .kind{display:grid;place-items:center;width:40px;height:30px;flex:none;border:1px solid var(--ink-15);border-radius:6px;background:var(--paper);font-size:11.5px;font-weight:700;color:var(--ink-75)}
+.filled .name{font-size:15px;font-weight:600;word-break:break-all}
+.filled .size{flex:none;font-size:13.5px;color:var(--ink-55)}
+.filled button{margin-left:auto;flex:none;padding:7px 14px;border:1px solid var(--ink-15);border-radius:6px;background:var(--paper);font-size:13px;font-weight:600;color:var(--ink-75)}
+.filled button:disabled{color:var(--ink-40);cursor:not-allowed}
+
+.startbox{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:22px}
+.startbox .button{min-width:260px;justify-content:center}
+.startbox .button:disabled{background:var(--ink-15);border-color:var(--ink-15);color:var(--paper);cursor:not-allowed}
+.startbox .hint{font-size:13.5px;color:var(--ink-55)}
+
+/* Tables shown inside a stage: the file fingerprint list and the reproduction progress */
+.panel{display:flex;flex-direction:column;gap:10px;margin-top:16px;padding:18px 20px;border-radius:10px;background:var(--ink-3)}
+/* File names carry a date and run long, so the name column is generous and the fingerprint takes what is left */
+.panel .frow{display:grid;grid-template-columns:minmax(140px,auto) minmax(0,1fr) auto;gap:16px;align-items:baseline;font-size:13.5px}
+.panel .frow .k{color:var(--ink-55);word-break:break-all}
+.panel .frow .h{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;color:var(--ink-55);word-break:break-all}
+/* The row being typed blinks a caret after the last character */
+.panel .frow .h.typing::after{content:'▍';margin-left:1px;color:var(--red);animation:caret .9s steps(1) infinite}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.panel .frow .m{font-weight:700;color:var(--ink);white-space:nowrap}
+.panel .frow .m.no{color:var(--red)}
+.panel .trow{display:flex;justify-content:space-between;gap:16px;font-size:14.5px;animation:rise .26s ease both}
+.panel .trow .g{font-weight:600}
+.panel .trow .v{color:var(--ink-55);font-variant-numeric:tabular-nums}
+.panel .busy{font-size:14px;color:var(--ink-40);animation:pulse .9s ease-in-out infinite}
+
+.runchip{display:flex;align-items:center;gap:14px;margin-top:4px;padding:20px 0 28px;border-top:1px solid var(--ink-15)}
+.runchip .busy{display:inline-flex;align-items:center;gap:14px;font-size:17px;font-weight:600;letter-spacing:-.02em}
+.runchip .busy .s{width:18px;height:18px;flex:none;border:2px solid var(--ink-15);border-top-color:var(--red);border-radius:50%;animation:spin .7s linear infinite}
+.runchip .hint{font-size:14px;color:var(--ink-55)}
+.runchip .cancel{margin-left:auto;min-width:140px;justify-content:center}
+
+/* ── Notices and errors ── */
+.msgs:not(:empty){margin-top:20px}
+.msg{padding:12px 16px;margin-top:8px;border-radius:10px;font-size:15px}
+.msg.err{background:var(--red-8);color:var(--red);font-weight:600}
+.msg.warn{background:var(--ink-3);color:var(--ink-75)}
+
+/* ── Result ── */
+#sec-result-view{margin-top:56px;animation:rise .32s ease both}
+/* Verdict: a match is an ink plate with an ink ✓ on a white circle; anything else is a red plate with a red ✕ on a white circle */
+.verdict{display:flex;align-items:center;gap:24px;padding:30px 34px;border-radius:14px;background:var(--ink);color:#fff}
+.verdict .glyph{display:grid;place-items:center;width:64px;height:64px;flex:none;border-radius:50%;background:#fff;color:var(--ink);font-size:28px;font-weight:700}
+.verdict.no{background:var(--red)}
+.verdict.no .glyph{background:#fff;color:var(--red)}
+.verdict.hold{background:var(--red)}
+.verdict.hold .glyph{background:#fff;color:var(--red)}
+.verdict .big{display:block;font-size:32px;font-weight:600;letter-spacing:-.04em;color:#fff}
+.verdict .sub{display:block;margin-top:6px;font-size:15px;line-height:1.6;color:rgba(255,255,255,.78)}
+
+.highlights{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 40px;margin-top:8px;border-bottom:1px solid var(--ink-15)}
+.highlights>div{padding:24px 0}
+.highlights .k{display:block;font-size:13.5px;color:var(--ink-55)}
+.highlights .v{display:block;margin-top:8px;font-size:24px;font-weight:700;letter-spacing:-.03em}
+.highlights .v.no{color:var(--red)}
+.highlights .v.hold{color:var(--ink-55)}
+.highlights .note{display:block;margin-top:6px;font-size:13px;color:var(--ink-40)}
+
+.card{margin-top:48px}
+.card h2{font-size:20px;letter-spacing:-.03em;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+.factgroup h3{padding:24px 0 10px;border-bottom:1px solid var(--ink-15);font-size:13.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink-55)}
+.factrows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 48px}
+.factrows>div{display:flex;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--ink-15);font-size:14.5px}
+.facts .k{flex:none;color:var(--ink-55)}
+.facts .v{font-weight:600;text-align:right;word-break:break-all}
+.facts .v.no{color:var(--red)}
+.card .note{margin-top:18px;font-size:13.5px;line-height:1.7;color:var(--ink-55)}
+
+.logbox{display:flex;align-items:center;gap:24px;margin-top:40px;padding:24px 28px;border-radius:12px;background:var(--ink-3)}
+.logbox .t{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.logbox .d{margin-top:4px;font-size:14px;color:var(--ink-55)}
+.logbox .button{margin-left:auto;flex:none;min-width:180px;justify-content:center}
+.logbox .button:disabled{color:var(--ink-40);border-color:var(--ink-15);cursor:default}
+
+.again{display:flex;justify-content:center;margin-top:44px}
+.again .button{min-width:260px;justify-content:center}
+
+/* ── Footer ── */
+.foot{border-top:1px solid var(--ink)}
+.foot .inner{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:32px;padding-bottom:32px}
+.foot .logo{display:block;height:26px;width:auto}
+.foot p{font-size:13.5px;color:var(--ink-55);text-align:right}
+.foot p+p{margin-top:6px}
+.foot .copy,.foot .support b{font-variant-numeric:tabular-nums}
+.foot b{font-weight:700;color:var(--ink)}
+.foot a:hover{color:var(--red)}
+
+@media(max-width:900px){
+  .hero-row{grid-template-columns:minmax(0,1fr);gap:40px}
+  .hero-art{justify-self:stretch;max-width:none}
+  .highlights,.factrows{grid-template-columns:minmax(0,1fr)}
+  .verdict{flex-direction:column;align-items:flex-start}
+  .logbox{flex-direction:column;align-items:flex-start}
+  .logbox .button{margin-left:0}
+  .panel .frow{grid-template-columns:minmax(0,1fr)}
+  .runchip{flex-wrap:wrap}
+  .runchip .cancel{margin-left:0}
+  .run{padding:64px 0 80px}
+  .foot .inner{flex-direction:column;align-items:flex-start}
+  .foot p{text-align:left}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *{transition:none !important;animation:none !important}
+}
